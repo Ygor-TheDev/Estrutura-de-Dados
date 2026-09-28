@@ -1,2 +1,2 @@
 # Estrutura-de-Dados
-Código para estudo de Arvore de Decisão em estrutura de dados na linguagem C
+Códigos do meu estudo em Árvores na linguagem C.
