@@ -1,0 +1,98 @@
+/*Trabalho de Estrutura de Dados / IA - Arvore de Decisao
+arvore feita para descobrir em qual pokemon a pessoa ta pensando, sem treinar em base
+de dados.
+caracteristicas dos 3 pokemon pokemon escolhidos:
+Corviknight (tipo Aco/Voador)
+Greninja    (tipo Agua/Dark)
+Shedinja    (tipo Inseto/Fantasma, fica sempre com 1 HP)*/
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// struct original
+typedef struct No {
+    char pergunta[100];
+    struct No *sim;
+    struct No *nao;
+    int resultado;
+    int ehFolha;
+} No;
+
+// função pra criar os nos da arvore na memoria
+No* criar_no(char *texto, int eh_folha) {
+    No *novo_no = (No*)malloc(sizeof(No));
+    
+    strcpy(novo_no->pergunta, texto);
+    
+    //inicializar com NULL pra não pegar lixo de memoria
+    novo_no->sim = NULL;
+    novo_no->nao = NULL;
+    
+    novo_no->ehFolha = eh_folha;
+    novo_no->resultado = 0; 
+    
+    return novo_no;
+}
+
+// funcao recursiva q vai percorrer a arvore
+void classificar(No *atual) {
+    // qnd ehFolha for 1, a gnt chegou no resultado final e acaba
+    if (atual->ehFolha == 1) {
+        printf("\n=> O Pokemon q vc pensou eh o: %s\n", atual->pergunta);
+        return;
+    }
+
+    int resp;
+    // se nao for folha, faz a pergunta pro usuario
+    printf("%s (1 pra SIM, 0 pra NAO): ", atual->pergunta);
+    scanf("%d", &resp);
+
+    // aqui a gnt desce na arvore dependendo do q o usuario digita
+    if (resp == 1) {
+        classificar(atual->sim); // vai pro lado do sim
+    } else {
+        classificar(atual->nao); // desce pro lado do nao
+    }
+}
+
+// limpa os nos da memoria no fim do programa pra nao dar memory leak
+void liberar_arvore(No *atual) {
+    if (atual == NULL) return;
+    liberar_arvore(atual->sim);
+    liberar_arvore(atual->nao);
+    free(atual);
+}
+
+int main() {
+    // criando as perguntas e resultados na mao msm
+    No *pergunta_voador = criar_no("Ele eh do tipo Voador?", 0);
+    No *pergunta_agua = criar_no("Ele eh do tipo Agua?", 0);
+
+    // folhas (resultados)
+    No *corviknight = criar_no("Corviknight!", 1);
+    No *greninja = criar_no("Greninja!", 1);
+    No *shedinja = criar_no("Shedinja!", 1);
+
+    // ==========================ligando os ponteiros============================================
+    
+    // primeira decisao: voador
+    pergunta_voador->sim = corviknight; 
+    pergunta_voador->nao = pergunta_agua; // se nao for, a gnt testa se eh de agua
+    
+    // segunda decisao: agua
+    pergunta_agua->sim = greninja; 
+    pergunta_agua->nao = shedinja; // se n for voador nem agua, so sobra o shedinja
+
+    printf("--- Jogo da Arvore de Decisao ---\n");
+    printf("Pense em um desses: Corviknight, Greninja ou Shedinja.\n\n");
+
+    // chama a funcao recursiva passando o no raiz pra começar
+    classificar(pergunta_voador);
+
+    // libera td no final
+    liberar_arvore(pergunta_voador); 
+
+    return 0;
+}
